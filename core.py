@@ -58,7 +58,7 @@ def GetPlayfabData():
         '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
         '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
         '"SpecificRevision":0,"AuthenticationContext":null}')
-    pp.pprint(content)
+    # pp.pprint(content)
     if content["code"] != 200:
         print(f'获取用户数据失败！请联系作者')
         return None
@@ -108,21 +108,20 @@ def IntervalCheckFarm():
     pp.pprint(result)
 
 
-# 收菜API
+# 操作API
 def UpdateFarmData(param):
     result = ExecuteCloudScript('{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{'
                                 '"DictTrees":' + param + ',"IsHarvestTree":true},"FunctionName":"UpdateFarmData"},'
                                                          '"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
                                                          '"SpecificRevision":0,"AuthenticationContext":null}')
-    # pp.pprint(result)
+    pp.pprint(result)
     print(f'{result["data"]["FunctionResult"]}')
     if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
-        print(f'!!!!!!!!收菜成功！获得经验：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
-
+        print(f'!!!!!!!!操作成功！当前等级：Lv.{result["data"]["APIRequestsIssued"]},距离升级还需EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
         playerData = GetPlayfabData()  # 更新用户信息
         return 0
     else:
-        print(f'!!!!!!!!收菜失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+        print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
         if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
             return 1
         if result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
@@ -131,6 +130,7 @@ def UpdateFarmData(param):
 
 # 收获植物
 def harverst(playerData, timeStamp, MaxTryTime):
+    print("harverst ",playerData, timeStamp, MaxTryTime)
     # harvest Trees
     for key, plantData in playerData["Farm"]["AllTrees"].items():
         lastFlag = plantData["LastHarvestTime"] % 10
@@ -141,8 +141,12 @@ def harverst(playerData, timeStamp, MaxTryTime):
         tryTime = MaxTryTime
         while tryTime:
             print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]), " try time: ", str(MaxTryTime - tryTime))
-            plantData["LastHarvestTime"] = timeStamp // 10 * 10 - 10 * (MaxTryTime - tryTime) + lastFlag
-            plantData["UpdateTime"] = timeStamp
+            # plantData["LastHarvestTime"] = timeStamp // 10 * 10 - 10 * (MaxTryTime - tryTime) + lastFlag
+            # plantData["UpdateTime"] = timeStamp
+            plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + timeStamp%plantData["LastHarvestTime"]//240 * 240
+            plantData["UpdateTime"] = plantData["LastHarvestTime"]
+            print(plantData["LastHarvestTime"])
+
             print("--------hdata", plantData)
             updateRes = UpdateFarmData(json.dumps({key: plantData}))
             if updateRes == 0:
