@@ -9,7 +9,6 @@ headers = {
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'zh-CN,zh;q=0.9',
     'content-type': 'application/json',
-    'referer': '*/*',
     'origin': 'https://play.kawaii.global',
     'referer': 'https://play.kawaii.global/',
     'x-playfabsdk': 'UnitySDK-2.113.210830',

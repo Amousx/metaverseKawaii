@@ -1,26 +1,11 @@
-# 导入需要的模块
-import json
-import requests
 import pprint
-import time
 import core
 import net
 import yaml
 import schedule
-import util
-
+import marketplace
 
 pp = pprint.PrettyPrinter(indent=4)
-
-def getTimeStamp():
-
-    serverTime = time.strptime(core.GetTime()["data"]["Time"], "%Y-%m-%dT%H:%M:%S.%fZ")
-    print("serverTime", serverTime)
-
-    timeStamp = int(time.mktime(serverTime))
-    timeStamp = timeStamp + 3600 * util.calculate_offset(timeStamp)  # 网页端取的是东八区时间上报
-    print("interval time", timeStamp)
-    return timeStamp
 
 
 def showWelcome(playerStatus):
@@ -41,21 +26,21 @@ def showWelcome(playerStatus):
         ''')
 
 
-def task_harverst():
-    print(f'task_harverst')
+def task_queue():
+    print('task queue start')
+    core.harverst()
+    core.feed()
+    core.collectEgg()
 
-    timeStamp = getTimeStamp()
-    
-    playerData = core.GetPlayfabData()
-    core.harverst(playerData=playerData,timeStamp=timeStamp,MaxTryTime=conf['MaxTryTime'])
+
+
 
 def tasklist():
     # 清空任务
     schedule.clear()
 
-    # 创建收割植物任务
-    schedule.every(conf['harvestPeriod']).seconds.do(task_harverst).run()
-    # 创建收割蛋任务
+    # 创建任务
+    schedule.every(conf['harvestPeriod']).seconds.do(task_queue).run()
 
     while 1:
         schedule.run_pending()
@@ -63,6 +48,9 @@ def tasklist():
 
 
 if __name__ == "__main__":
+
+
+    # marketplace.checkMarket()
 
     configure = open("conf.yaml", 'r')
     conf = yaml.safe_load(configure)
@@ -80,5 +68,4 @@ if __name__ == "__main__":
     # 能够拿到用户数据
     playerData = core.GetPlayfabData()
     showWelcome(playerData)
-
     tasklist()

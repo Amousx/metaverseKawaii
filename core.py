@@ -4,11 +4,17 @@ import yaml
 import json
 import pprint as pp
 import net
-import copy
+import time
+import util
+import random
 
 err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
 err_NotFed = "This animal has not been fed yet"
+err_InvalidFoodId = "Invalid Food Id"
+
+configure = open("conf.yaml", 'r')
+conf = yaml.safe_load(configure)
 
 
 # 登录
@@ -43,11 +49,20 @@ def GetTime():
     print(content)
     return content
 
+def getTimeStamp():
+
+    serverTime = time.strptime(GetTime()["data"]["Time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    print("serverTime", serverTime)
+
+    timeStamp = int(time.mktime(serverTime))
+    timeStamp = timeStamp + 3600 * util.calculate_offset(timeStamp)  # 网页端取的是东八区时间上报
+    print("interval time", timeStamp)
+    return timeStamp
+
 
 # 游戏的核心API
 def ExecuteCloudScript(data):
     print("*********ExecuteCloudScript data:", str(data))
-
     net.options('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830')
     response = net.post('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830', data)
     content = json.loads(response.content)
@@ -60,7 +75,7 @@ def GetPlayfabData():
         '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
         '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
         '"SpecificRevision":0,"AuthenticationContext":null}')
-    # pp.pprint(content)
+    pp.pprint(content)
     if content["code"] != 200:
         print(f'获取用户数据失败！请联系作者')
         return None
@@ -116,7 +131,7 @@ def UpdateFarmData(updateType,param):
     script = ''
     if updateType == 'tree':
         script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictTrees":' + param + ',"IsHarvestTree":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",''"SpecificRevision":0,"AuthenticationContext":null}'
-    elif updateType == 'animal':
+    elif updateType == 'collectEgg':
         script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsHarvestAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'feed_animal':
             script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
@@ -145,34 +160,98 @@ def UpdateFarmData(updateType,param):
 
 
 
+
 # 收获
-def harverst(playerData, timeStamp, MaxTryTime):
-    print("harverst ",playerData, timeStamp, MaxTryTime)
+def harverst():
+    timeStamp = getTimeStamp()
+    playerData = GetPlayfabData()
+    print("harverst ",playerData, timeStamp)
     # harvest Trees
     for key, plantData in playerData["Farm"]["AllTrees"].items():
         if plantData["LastHarvestTime"] == 0:
             print("请先手动收获一次")
             pass
         print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]))
+        #修改收割时间
         plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//120 * 120
         plantData["UpdateTime"] = plantData["LastHarvestTime"]
         updateRes = UpdateFarmData("tree",json.dumps({key: plantData}))
         if updateRes == 0:
             # TODO 记录收菜总收成
-            print(f'收菜成功！')
+            print(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
 
+#喂食 不成功
+def feed():
+    timeStamp = getTimeStamp()
+    playerData = GetPlayfabData()
+    for key, animalData in playerData["Farm"]["AllAnimals"].items():
+        #修改喂食时间
+        animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
+        foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
+        print(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物是:{foodIds}')
+        animalData["LstFoodIds"] = [foodIds[random.randint(0,1)]] 
+        animalData["MaxCap"] = random.randint(2,3)
+        updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
+        if updateRes == 0:
+            # TODO 记录收菜总收成
+            print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
 
-    # for key, animalData in playerData["Farm"]["AllAnimals"].items():
+''' 网页正确请求和返回的数据
+{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":1637324480,"HarvestedCount":0,"UpdateTime":1637324480,"MaxCap":2,"FoodId":0,"LstFoodIds":[202006,202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+{
+    "code": 200,
+    "status": "OK",
+    "data": {
+        "FunctionName": "UpdateFarmData",
+        "Revision": 107,
+        "FunctionResult": {
+            "Modifiers": {}
+        },
+        "Logs": [],
+        "ExecutionTimeSeconds": 0.083922,
+        "ProcessorTimeSeconds": 0.00244,
+        "MemoryConsumedBytes": 32536,
+        "APIRequestsIssued": 5,
+        "HttpRequestsIssued": 0
+    }
+}
+'''
+#收蛋 不成功
+def collectEgg():
+    timeStamp = getTimeStamp()
+    playerData = GetPlayfabData()
+    for key, animalData in playerData["Farm"]["AllAnimals"].items():
+        print("collect Animal uid:", key, " id: ", str(animalData["Id"]))
+        animalData["FeedTime"] =  0
+        animalData["HarvestedCount"] = 0
+        animalData["MaxCap"] = 0
+        animalData["LstFoodIds"] = []
+        updateRes = UpdateFarmData("collectEgg",json.dumps({key: animalData}))
+        if updateRes == 0:
+            # TODO 记录收菜总收成
+            print(f'收蛋成功！')
 
-    #     animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
-    #     animalData["LstFoodIds"] =  [202006]
-    #     updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
-    #     if updateRes == 0:
-    #         # TODO 记录收菜总收成
-    #         print(f'喂食成功！')
-
-    # for key, animalData in playerData["Farm"]["AllAnimals"].items():
-    #     updateRes = UpdateFarmData("animal",json.dumps({key: animalData}))
-    #     if updateRes == 0:
-    #         # TODO 记录收菜总收成
-    #         print(f'收蛋成功！')
+''' 网页正确请求和返回的数据
+ {"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":0,"HarvestedCount":0,"UpdateTime":1637323929,"MaxCap":0,"FoodId":0,"LstFoodIds":[]}},"IsHarvestAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+{
+    "code": 200,
+    "status": "OK",
+    "data": {
+        "FunctionName": "UpdateFarmData",
+        "Revision": 107,
+        "FunctionResult": {
+            "Modifiers": {
+                "Statistics": {
+                    "Exp": 954
+                }
+            }
+        },
+        "Logs": [],
+        "ExecutionTimeSeconds": 0.1144141,
+        "ProcessorTimeSeconds": 0.003183,
+        "MemoryConsumedBytes": 33984,
+        "APIRequestsIssued": 7,
+        "HttpRequestsIssued": 0
+    }
+}
+'''
