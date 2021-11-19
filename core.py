@@ -4,6 +4,7 @@ import yaml
 import json
 import pprint as pp
 import net
+import copy
 
 err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
@@ -115,10 +116,9 @@ def UpdateFarmData(param):
                                                          '"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
                                                          '"SpecificRevision":0,"AuthenticationContext":null}')
     pp.pprint(result)
-    print(f'{result["data"]["FunctionResult"]}')
+    # print(f'{result["data"]["FunctionResult"]}')
     if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
-        print(f'!!!!!!!!操作成功！当前等级：Lv.{result["data"]["APIRequestsIssued"]},距离升级还需EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
-        playerData = GetPlayfabData()  # 更新用户信息
+        print(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
         return 0
     else:
         print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
@@ -143,11 +143,9 @@ def harverst(playerData, timeStamp, MaxTryTime):
             print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]), " try time: ", str(MaxTryTime - tryTime))
             # plantData["LastHarvestTime"] = timeStamp // 10 * 10 - 10 * (MaxTryTime - tryTime) + lastFlag
             # plantData["UpdateTime"] = timeStamp
-            plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + timeStamp%plantData["LastHarvestTime"]//240 * 240
+            plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//120 * 120
             plantData["UpdateTime"] = plantData["LastHarvestTime"]
-            print(plantData["LastHarvestTime"])
 
-            print("--------hdata", plantData)
             updateRes = UpdateFarmData(json.dumps({key: plantData}))
             if updateRes == 0:
                 # TODO 记录收菜总收成

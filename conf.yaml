@@ -5,7 +5,7 @@
 
 
 
-    harvestPeriod : 240
+    harvestPeriod : 120
 
     error_flag:
         err_NotEnoughTime : "Not enough time to harvest"

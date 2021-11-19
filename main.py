@@ -18,7 +18,7 @@ def getTimeStamp():
     print("serverTime", serverTime)
 
     timeStamp = int(time.mktime(serverTime))
-    timeStamp = timeStamp + util.calculate_offset(timeStamp)  # 网页端取的是东八区时间上报
+    timeStamp = timeStamp + 3600 * util.calculate_offset(timeStamp)  # 网页端取的是东八区时间上报
     print("interval time", timeStamp)
     return timeStamp
 
@@ -45,6 +45,8 @@ def task_harverst():
     print(f'task_harverst')
 
     timeStamp = getTimeStamp()
+    
+    playerData = core.GetPlayfabData()
     core.harverst(playerData=playerData,timeStamp=timeStamp,MaxTryTime=conf['MaxTryTime'])
 
 def tasklist():
