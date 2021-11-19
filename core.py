@@ -8,6 +8,7 @@ import copy
 
 err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
+err_NotFed = "This animal has not been fed yet"
 
 
 # 登录
@@ -110,53 +111,68 @@ def IntervalCheckFarm():
 
 
 # 操作API
-def UpdateFarmData(param):
-    result = ExecuteCloudScript('{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{'
-                                '"DictTrees":' + param + ',"IsHarvestTree":true},"FunctionName":"UpdateFarmData"},'
-                                                         '"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
-                                                         '"SpecificRevision":0,"AuthenticationContext":null}')
+def UpdateFarmData(updateType,param):
+
+    script = ''
+    if updateType == 'tree':
+        script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictTrees":' + param + ',"IsHarvestTree":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",''"SpecificRevision":0,"AuthenticationContext":null}'
+    elif updateType == 'animal':
+        script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsHarvestAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+    elif updateType == 'feed_animal':
+            script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+
+
+    result = ExecuteCloudScript(script)
     pp.pprint(result)
     # print(f'{result["data"]["FunctionResult"]}')
     if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
-        print(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
+        # print(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
         return 0
     else:
         print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
         if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
+            print(f'没到时间！')
             return 1
         if result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+            print(f'无效时间！')
             return 2
+        if result["data"]["FunctionResult"]["Error"] == err_NotFed:
+            print(f'宝宝还没喂食！')
+            return 3
+            
+    return -1
 
 
-# 收获植物
+
+
+# 收获
 def harverst(playerData, timeStamp, MaxTryTime):
     print("harverst ",playerData, timeStamp, MaxTryTime)
     # harvest Trees
     for key, plantData in playerData["Farm"]["AllTrees"].items():
-        lastFlag = plantData["LastHarvestTime"] % 10
         if plantData["LastHarvestTime"] == 0:
             print("请先手动收获一次")
             pass
-        # try MaxTryTime times , each -10s
-        tryTime = MaxTryTime
-        while tryTime:
-            print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]), " try time: ", str(MaxTryTime - tryTime))
-            # plantData["LastHarvestTime"] = timeStamp // 10 * 10 - 10 * (MaxTryTime - tryTime) + lastFlag
-            # plantData["UpdateTime"] = timeStamp
-            plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//120 * 120
-            plantData["UpdateTime"] = plantData["LastHarvestTime"]
+        print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]))
+        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//120 * 120
+        plantData["UpdateTime"] = plantData["LastHarvestTime"]
+        updateRes = UpdateFarmData("tree",json.dumps({key: plantData}))
+        if updateRes == 0:
+            # TODO 记录收菜总收成
+            print(f'收菜成功！')
 
-            updateRes = UpdateFarmData(json.dumps({key: plantData}))
-            if updateRes == 0:
-                # TODO 记录收菜总收成
 
-                break
-            if updateRes == 1:
-                print(f'没到收获时间')
-                break
-            else:
-                tryTime -= 1
+    # for key, animalData in playerData["Farm"]["AllAnimals"].items():
 
-# TODO FEED
-# for animalData in playerData["Farm"]["AllAnimals"].items():
-#     print(animalData)
+    #     animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
+    #     animalData["LstFoodIds"] =  [202006]
+    #     updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
+    #     if updateRes == 0:
+    #         # TODO 记录收菜总收成
+    #         print(f'喂食成功！')
+
+    # for key, animalData in playerData["Farm"]["AllAnimals"].items():
+    #     updateRes = UpdateFarmData("animal",json.dumps({key: animalData}))
+    #     if updateRes == 0:
+    #         # TODO 记录收菜总收成
+    #         print(f'收蛋成功！')

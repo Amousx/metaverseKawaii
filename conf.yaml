@@ -10,3 +10,48 @@
     error_flag:
         err_NotEnoughTime : "Not enough time to harvest"
         err_InvalidTime : "Invalid Time"
+
+
+    item_id_species:
+        "201001" : "Snowberry"
+        "201002" : "Eboney"
+        "201003" : "Heartberry"
+        "201004" : "Silverey"
+        "201005" : "Floral biscuit"
+        "201006" : "Goldberry"
+        "201007" : "Greenoo"
+        "201008" : "Skyberry"
+        "201009" : "Brownberry"
+        "201010" : "Parple"
+        "201011" : "Pinkberry"
+
+
+    item_id_fruit:
+        "202001" : ""
+        "202002" : ""
+        "202003" : ""
+        "202004" : ""
+        "202005" : ""
+        "202006" : ""
+        "202007" : ""
+        "202008" : ""
+        "202009" : ""
+        "202010" : ""
+        "202011" : ""
+
+        
+    item_id_animal:
+        "206001" : ""
+        "206002" : ""
+        "206003" : ""
+        "206004" : ""
+        "206005" : ""
+        "206006" : ""
+        "206007" : ""
+        "206008" : ""
+        "206009" : ""
+        "206010" : ""
+        "206011" : ""
+
+    feed_fruit_relation:
+        "206001" : [202005,202009]
