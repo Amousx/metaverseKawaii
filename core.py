@@ -148,12 +148,15 @@ def UpdateFarmData(updateType,param):
         if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
             print(f'没到时间！')
             return 1
-        if result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+        elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
             print(f'无效时间！')
             return 2
-        if result["data"]["FunctionResult"]["Error"] == err_NotFed:
+        elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
             print(f'宝宝还没喂食！')
             return 3
+        elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
+            print(f'食物ID有误！')
+            return 4
             
     return -1
 
@@ -189,14 +192,23 @@ def feed():
         animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
         foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
         print(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物是:{foodIds}')
-        animalData["LstFoodIds"] = [foodIds[random.randint(0,1)]] 
-        animalData["MaxCap"] = random.randint(2,3)
-        updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
-        if updateRes == 0:
-            # TODO 记录收菜总收成
-            print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
+        animalData["LstFoodIds"] = [foodIds[0]] 
+        animalData["MaxCap"] = 2
+        while(True):
+            updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
+            if updateRes == 0:
+                # TODO 记录收菜总收成
+                print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
+            elif updateRes == 4:
+                animalData["LstFoodIds"] = [foodIds[1]] 
+
+# {"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332": {"Uid": "1637045983332", "Id": 206010, "FeedTime": 1637454840, "HarvestedCount": 0, "UpdateTime": 1637420758, "MaxCap": 2, "FoodId": 0, "LstFoodIds": [202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+
+#{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":1637454965,"HarvestedCount":0,"UpdateTime":1637454965,"MaxCap":1,"FoodId":0,"LstFoodIds":[202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 
 ''' 网页正确请求和返回的数据
+{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332": {"Uid": "1637045983332", "Id": 206010, "FeedTime": 1637454480, "HarvestedCount": 0, "UpdateTime": 1637420758, "MaxCap": 2, "FoodId": 0, "LstFoodIds": [202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+*
 {"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":1637324480,"HarvestedCount":0,"UpdateTime":1637324480,"MaxCap":2,"FoodId":0,"LstFoodIds":[202006,202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 {
     "code": 200,
@@ -224,6 +236,7 @@ def collectEgg():
         print("collect Animal uid:", key, " id: ", str(animalData["Id"]))
         animalData["FeedTime"] =  0
         animalData["HarvestedCount"] = 0
+        animalData["UpdateTime"] = timeStamp
         animalData["MaxCap"] = 0
         animalData["LstFoodIds"] = []
         updateRes = UpdateFarmData("collectEgg",json.dumps({key: animalData}))

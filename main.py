@@ -29,7 +29,7 @@ def showWelcome(playerStatus):
 def task_queue():
     print('task queue start')
     core.harverst()
-    core.feed()
+    # core.feed()
     core.collectEgg()
 
 

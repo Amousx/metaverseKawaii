@@ -1,8 +1,14 @@
 import json
 import requests
+import httpx
 
 headers = {
+
     'authority': 'kawaii-martketplace-api.airight.io',
+    'method': 'POST',
+    'path': '/v0/list_auction',
+    'scheme': 'https',
+
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
     'content-type': 'application/json',
     'accept': 'application/json, text/plain, */*',
@@ -34,10 +40,9 @@ def checkMarket():
             "marketplace":"0x48F49DB11db3D42B5aeAa3DFb084fC38CA469118"
         }
     }
-    response = post('https://kawaii-martketplace-api.airight.io/v0/list_auction',json.dumps(data))
-
-    for data in response:
-        print(data)
-                    
+    response = httpx.post('https://kawaii-martketplace-api.airight.io/v0/list_auction',data=json.dumps(data),headers=headers)
+    print(response.text)
+    print(response.content)
+    # content = json.loads(response.content)
     # content = json.loads(response.content)
     # print(content)
