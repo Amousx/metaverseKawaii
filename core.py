@@ -211,10 +211,11 @@ def feed():
             if food1Num >= 10:
                 animalData["LstFoodIds"].append(foodIds[0])
                 food1Num = food1Num - 10
+                time.sleep(1)
             elif food2Num >= 10:
-
                 animalData["LstFoodIds"].append(foodIds[1])
                 food2Num = food2Num - 10
+                time.sleep(1)
 
         if len(animalData["LstFoodIds"]) == 0:
             print(f"背包里都没有水果，您就别喂啦！")
