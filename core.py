@@ -139,7 +139,7 @@ def UpdateFarmData(updateType,param):
             script = '{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'getDye':
             script = '{"CustomTags":null,"FunctionName":"DyeObtainOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
-    
+
 
 
     result = ExecuteCloudScript(script)
@@ -162,7 +162,7 @@ def UpdateFarmData(updateType,param):
         elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
             print(f'食物ID有误！')
             return 4
-            
+
     return 0
 
 
@@ -194,6 +194,7 @@ def feed():
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
+    global foodIds
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
         #修改喂食时间
         animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
@@ -211,20 +212,21 @@ def feed():
                 animalData["LstFoodIds"].append(foodIds[0])
                 food1Num = food1Num - 10
             elif food2Num >= 10:
+
                 animalData["LstFoodIds"].append(foodIds[1])
                 food2Num = food2Num - 10
 
         if len(animalData["LstFoodIds"]) == 0:
             print(f"背包里都没有水果，您就别喂啦！")
             continue
-        animalData["MaxCap"] = len(animalData["LstFoodIds"]) 
+        animalData["MaxCap"] = len(animalData["LstFoodIds"])
 
         updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
         if updateRes == 0:
             # TODO 记录收菜总收成
             print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
-            
-        
+
+
 
 # {"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332": {"Uid": "1637045983332", "Id": 206010, "FeedTime": 1637454840, "HarvestedCount": 0, "UpdateTime": 1637420758, "MaxCap": 2, "FoodId": 0, "LstFoodIds": [202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 
@@ -277,14 +279,14 @@ def convertDye():
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
     for fruitData in inventory_fruit:
-        if inventory_fruit[str(foodIds[0])] >= 60 :
+        if inventory_fruit.get(str(foodIds[0]), 'not exist') >= 60 :
             convertData = {
                 "Id": 6006,
                 "Amount": 1,
                 "FunctionName": "DyeConvertOffChain",
             }
             updateRes = UpdateFarmData("convertDye",json.dumps(convertData))
-            
+
 
 #获得染料 合成完成
 def getDye():
@@ -531,31 +533,31 @@ def getDye():
 
 #生成订单
 # {"CustomTags":null,"FunctionName":"GenerateOrder","FunctionParameter":{"FunctionName":"GenerateOrder"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
-# 
-# 
+#
+#
 #交付订单
 # {"CustomTags":null,"FunctionName":"DeliveryObtainNFT","FunctionParameter":{"IsDev":false,"Address":null,"Index":0,"FunctionName":"DeliveryObtainNFT"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
-# 
+#
 # 偷菜偷蛋
 # {"CustomTags":null,"FunctionName":"Help","FunctionParameter":{"Data":{"DictEggs":{"207001":1}},"OtherId":"2759184EEF9CDA08","FunctionName":"Help"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
-# 
-# 
+#
+#
 # 获取好友列表
 # https://b477a.playfabapi.com/Client/GetFriendsList?sdk=UnitySDK-2.113.210830
 #{"CustomTags":null,"IncludeFacebookFriends":null,"IncludeSteamFriends":null,"ProfileConstraints":{"ShowAvatarUrl":false,"ShowBannedUntil":false,"ShowCampaignAttributions":false,"ShowContactEmailAddresses":false,"ShowCreated":false,"ShowDisplayName":true,"ShowExperimentVariants":false,"ShowLastLogin":true,"ShowLinkedAccounts":false,"ShowLocations":false,"ShowMemberships":false,"ShowOrigination":false,"ShowPushNotificationRegistrations":false,"ShowStatistics":true,"ShowTags":false,"ShowTotalValueToDateInUsd":false,"ShowValuesToDate":false},"XboxToken":null,"AuthenticationContext":null}
-# {"code":200,"status":"OK","data":{"Friends":[{"FriendPlayFabId":"43103EE911461424","TitleDisplayName":"mixiu","Tags":["confirmed"],"Profile":{"PublisherId":"E740DDFD3653CA4F","TitleId":"B477A","PlayerId":"43103EE911461424","LastLogin":"2021-11-21T01:30:40.57Z","DisplayName":"mixiu","Statistics":[{"Name":"Exp","Version":1,"Value":13016}]}}]}}# 
-# 
+# {"code":200,"status":"OK","data":{"Friends":[{"FriendPlayFabId":"43103EE911461424","TitleDisplayName":"mixiu","Tags":["confirmed"],"Profile":{"PublisherId":"E740DDFD3653CA4F","TitleId":"B477A","PlayerId":"43103EE911461424","LastLogin":"2021-11-21T01:30:40.57Z","DisplayName":"mixiu","Statistics":[{"Name":"Exp","Version":1,"Value":13016}]}}]}}#
+#
 # 通过钱包地址获取用户ID
 # {"CustomTags":null,"FunctionName":"GetPlayfabIdFromMetaMask","FunctionParameter":{"MetaMaskAddress":"0x0198D860C767aF45a91CC09949c1CfB74E49c939","FunctionName":"GetPlayfabIdFromMetaMask"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 # {"code":200,"status":"OK","data":{"FunctionName":"GetPlayfabIdFromMetaMask","Revision":107,"FunctionResult":{"PlayfabId":"43103EE911461424"},"Logs":[],"ExecutionTimeSeconds":0.1211591,"ProcessorTimeSeconds":0.000533,"MemoryConsumedBytes":6064,"APIRequestsIssued":1,"HttpRequestsIssued":0}}
-# 
-# 
+#
+#
 # 获取用户资料
 # Request URL: https://b477a.playfabapi.com/Client/GetPlayerProfile?sdk=UnitySDK-2.113.210830
 # {"CustomTags":null,"PlayFabId":"43103EE911461424","ProfileConstraints":{"ShowAvatarUrl":false,"ShowBannedUntil":false,"ShowCampaignAttributions":false,"ShowContactEmailAddresses":false,"ShowCreated":false,"ShowDisplayName":true,"ShowExperimentVariants":false,"ShowLastLogin":true,"ShowLinkedAccounts":false,"ShowLocations":false,"ShowMemberships":false,"ShowOrigination":false,"ShowPushNotificationRegistrations":false,"ShowStatistics":true,"ShowTags":false,"ShowTotalValueToDateInUsd":false,"ShowValuesToDate":false},"AuthenticationContext":null}
 # {"code":200,"status":"OK","data":{"PlayerProfile":{"PublisherId":"E740DDFD3653CA4F","TitleId":"B477A","PlayerId":"43103EE911461424","LastLogin":"2021-11-21T01:25:20Z","DisplayName":"mixiu","Statistics":[{"Name":"Exp","Version":1,"Value":12998}]}}}
-# 
-# 
-# 
+#
+#
+#
 # 加好友
 # {"CustomTags":null,"FunctionName":"SendFriendRequest","FunctionParameter":{"FriendPlayFabId":"43103EE911461424","FunctionName":"SendFriendRequest"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
