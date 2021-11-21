@@ -1,6 +1,6 @@
 ---
-    wallet_address: "0x9e9c222b9bebe6e2f8610e8d11a26cb65bbc7736"
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21JZCI6IjB4OWU5YzIyMmI5YmViZTZlMmY4NjEwZThkMTFhMjZjYjY1YmJjNzczNiIsImlhdCI6MTYzNzAzMTQ5MSwiZXhwIjoxNjM3NjM2MjkxfQ.YUmx5aoDtfwmh9IArp6Ecx0oaDUmzqcFn5tMcDWF778"
+    wallet_address: ""
+    token: ""
     MaxTryTime: 10
 
 
@@ -51,6 +51,7 @@
         "206008" : "Cellyfish"
         "206009" : "Clayshelly"
         "206010" : "Plasto"
+        "206011" : "null"
 
 
     item_id_animal_output:
@@ -91,4 +92,5 @@
         "206008": "207008"
         "206009": "207009"
         "206010": "207010"
+        "206011": "null"
 
