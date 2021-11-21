@@ -280,7 +280,7 @@ def convertDye():
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
     for fruitData in inventory_fruit:
-        if inventory_fruit.get(str(foodIds[0]), 'not exist') >= 60 :
+        if inventory_fruit.get(str(foodIds[0]), '0') >= 60 :
             convertData = {
                 "Id": 6006,
                 "Amount": 1,

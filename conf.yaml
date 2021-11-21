@@ -40,6 +40,20 @@
         "202011" : "Pinkberry"
 
 
+    item_id_dye:
+        "6001" : "White dye"
+        "6002" : "Black dye"
+        "6003" : "Red dye"
+        "6004" : "Grey dye"
+        "6005" : "Orange dye"
+        "6006" : "Yellow dye"
+        "6007" : "Green dye"
+        "6008" : "Blue dye"
+        "6009" : "Brown dye"
+        "6010" : "Purple dye"
+        "6011" : "Pink dye"
+
+
     item_id_animal:
         "206001" : "Woodie"
         "206002" : "Metalfox"
@@ -51,7 +65,6 @@
         "206008" : "Cellyfish"
         "206009" : "Clayshelly"
         "206010" : "Plasto"
-        "206011" : "null"
 
 
     item_id_animal_output:
@@ -65,7 +78,6 @@
         "207008" : "Cellyfish Egg"
         "207009" : "Clayshelly Egg"
         "207010" : "Plasto Egg"
-        "207011" : "null"
 
 
     feed_fruit_relation:
@@ -81,6 +93,20 @@
         "206010" : [202006,202008]
 
 
+    convert_dye_relation:
+        "201001" : "6001"
+        "201002" : "6002"
+        "201003" : "6003"
+        "201004" : "6004"
+        "201005" : "6005"
+        "201006" : "6006"
+        "201007" : "6007"
+        "201008" : "6008"
+        "201009" : "6009"
+        "201010" : "6010"
+        "201011" : "6011"
+
+
     animal_output_relation:
         "206001": "207001"
         "206002": "207002"
@@ -92,5 +118,3 @@
         "206008": "207008"
         "206009": "207009"
         "206010": "207010"
-        "206011": "null"
-
