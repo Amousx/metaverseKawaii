@@ -182,7 +182,7 @@ def harverst():
             pass
         print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]))
         #修改收割时间
-        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//120 * 120
+        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//240 * 120
         plantData["UpdateTime"] = plantData["LastHarvestTime"]
         updateRes = UpdateFarmData("tree",json.dumps({key: plantData}))
         if updateRes == 0:
@@ -197,7 +197,7 @@ def feed():
     global foodIds
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
         #修改喂食时间
-        animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//120 * 120
+        animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//240 * 120
         animalData["UpdateTime"] =  animalData["FeedTime"]
         foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
 
