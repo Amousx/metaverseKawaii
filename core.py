@@ -148,29 +148,31 @@ def UpdateFarmData(updateType,param):
     # if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
     #     # print(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
     #     return 0
-    if "Error" in result["data"]["FunctionResult"]:
-        print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
-        if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-            print(f'没到时间！')
-            return 1
-        elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-            print(f'无效时间！')
-            return 2
-        elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
-            print(f'宝宝还没喂食！')
-            return 3
-        elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-            print(f'食物ID有误！')
-            return 4
+    # if "Error" in result["data"]["FunctionResult"]:
+    #     print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+    #     if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
+    #         print(f'没到时间！')
+    #         return 1
+    #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+    #         print(f'无效时间！')
+    #         return 2
+    #     elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
+    #         print(f'宝宝还没喂食！')
+    #         return 3
+    #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
+    #         print(f'食物ID有误！')
+    #         return 4
 
-    return 0
-
-
-
+    # return 0
+    return result
 
 
-# 收获
+
+
+
+# 收获 已实现，如遇BUG请反馈
 def harverst():
+    print("【收菜任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
@@ -182,22 +184,36 @@ def harverst():
             pass
         print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]))
         #修改收割时间
-        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//240 * 120
+        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         plantData["UpdateTime"] = plantData["LastHarvestTime"]
-        updateRes = UpdateFarmData("tree",json.dumps({key: plantData}))
-        if updateRes == 0:
-            # TODO 记录收菜总收成
-            print(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
+        result = UpdateFarmData("tree",json.dumps({key: plantData}))
 
-#喂食 不成功
+        if "Error" in result["data"]["FunctionResult"]:
+            print(f'!!!!!!!!收菜失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
+                print(f'没到收获时间！')
+                continue
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+                print(f'无效的时间！')
+                continue
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
+                print(f'食物ID有误！')
+                continue
+
+        print(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
+
+    print("【收菜任务结束】")
+    print("\n______________________\n")
+
+#喂食 已实现，如遇BUG请反馈
 def feed():
+    print("【喂食任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
-    global foodIds
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
         #修改喂食时间
-        animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//240 * 120
+        animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         animalData["UpdateTime"] =  animalData["FeedTime"]
         foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
 
@@ -222,41 +238,33 @@ def feed():
             continue
         animalData["MaxCap"] = len(animalData["LstFoodIds"])
 
-        updateRes = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
-        if updateRes == 0:
-            # TODO 记录收菜总收成
-            print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
+        result = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
+
+        if "Error" in result["data"]["FunctionResult"]:
+            print(f'!!!!!!!!喂食失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
+                print(f'未到喂食时间！')
+                continue
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+                print(f'无效的时间！')
+                continue
+            elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
+                print(f'宝宝还没喂食！')
+                continue
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
+                print(f'食物ID有误！')
+                continue
 
 
+        print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
 
-# {"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332": {"Uid": "1637045983332", "Id": 206010, "FeedTime": 1637454840, "HarvestedCount": 0, "UpdateTime": 1637420758, "MaxCap": 2, "FoodId": 0, "LstFoodIds": [202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 
-#{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":1637454965,"HarvestedCount":0,"UpdateTime":1637454965,"MaxCap":1,"FoodId":0,"LstFoodIds":[202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+    print("【喂食任务结束】")
+    print("\n______________________\n")
 
-''' 网页正确请求和返回的数据
-{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332": {"Uid": "1637045983332", "Id": 206010, "FeedTime": 1637454480, "HarvestedCount": 0, "UpdateTime": 1637420758, "MaxCap": 2, "FoodId": 0, "LstFoodIds": [202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
-*
-{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":{"1637045983332":{"Uid":"1637045983332","Id":206010,"FeedTime":1637324480,"HarvestedCount":0,"UpdateTime":1637324480,"MaxCap":2,"FoodId":0,"LstFoodIds":[202006,202006]}},"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
-{
-    "code": 200,
-    "status": "OK",
-    "data": {
-        "FunctionName": "UpdateFarmData",
-        "Revision": 107,
-        "FunctionResult": {
-            "Modifiers": {}
-        },
-        "Logs": [],
-        "ExecutionTimeSeconds": 0.083922,
-        "ProcessorTimeSeconds": 0.00244,
-        "MemoryConsumedBytes": 32536,
-        "APIRequestsIssued": 5,
-        "HttpRequestsIssued": 0
-    }
-}
-'''
-#收蛋
+#收蛋 已实现，如遇BUG请反馈
 def collectEgg():
+    print("【收蛋任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
@@ -267,35 +275,77 @@ def collectEgg():
         animalData["UpdateTime"] = timeStamp
         animalData["MaxCap"] = 0
         animalData["LstFoodIds"] = []
-        updateRes = UpdateFarmData("collectEgg",json.dumps({key: animalData}))
-        if updateRes == 0:
-            # TODO 记录收菜总收成
-            print(f'收蛋成功！')
+        result = UpdateFarmData("collectEgg",json.dumps({key: animalData}))
 
+        if "Error" in result["data"]["FunctionResult"]:
+            print(f'!!!!!!!!收蛋失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
+                print(f'没到时间！')
+                
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
+                print(f'无效时间！')
+                
+            elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
+                print(f'宝宝还没喂食！')
+                
+            elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
+                print(f'食物ID有误！')
+
+            continue
+
+        print(f'收蛋成功！')
+
+
+    print("【收蛋任务结束】")
+    print("\n______________________\n")
 
 #合成染料 加入工作队列
 def convertDye():
-
+    print("【合成染料任务开始】")
     playerData = GetPlayfabData()
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
-    for fruitData in inventory_fruit:
-        if inventory_fruit.get(str(foodIds[0]), '0') >= 60 :
+    for fruitId,fruitNum in inventory_fruit.items():
+        if fruitNum >= 60 :
             convertData = {
-                "Id": 6006,
-                "Amount": 1,
+                "Id": conf["convert_dye_relation"][str(fruitId)],
+                "Amount": (fruitNum - 10)//50,
                 "FunctionName": "DyeConvertOffChain",
             }
-            updateRes = UpdateFarmData("convertDye",json.dumps(convertData))
+            result = UpdateFarmData("convertDye",json.dumps(convertData))
+            if "Error" in result["data"]["FunctionResult"]:
+                print(f'合成染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+                continue
+            print(f'合成染料成功！')
+            # 'FunctionResult': {'Modifiers': {'OffChainItems': {'Fruit': {'202010': 42}}},
+            #                  'NewSlot': {'AmountProduct': 2,
+            #                              'IDProductMaterial': '6010',
+            #                              'IDRawMaterial': 202010,
+            #                              'TimeEnd': 1637501827,
+            #                              'TimeStart': 1637498227}},
+       
 
+    print("【合成染料任务结束】")
+    print("\n______________________\n")
 
-#获得染料 合成完成
+#获取染料
 def getDye():
+    print("【获取染料任务结束】")
     convertData = {
         "Index": 0,
         "FunctionName": "DyeObtainOffChain",
     }
-    updateRes = UpdateFarmData("getDye",json.dumps(convertData))
+    result = UpdateFarmData("getDye",json.dumps(convertData))
+    if "Error" in result["data"]["FunctionResult"]:
+        print(f'获取染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+
+        if result["data"]["FunctionResult"]["Error"] == 'Not enough time to obtain':
+            print(f'染料队列尚未完成！')
+            
+        return
+    print(f'获取染料成功！')
+    print("【获取染料任务结束】")
+    print("\n______________________\n")
 
 
 

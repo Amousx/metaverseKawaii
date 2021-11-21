@@ -1,6 +1,6 @@
 ---
-    wallet_address: ""
-    token: ""
+    wallet_address: "0x9e9c222b9bebe6e2f8610e8d11a26cb65bbc7736"
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21JZCI6IjB4OWU5YzIyMmI5YmViZTZlMmY4NjEwZThkMTFhMjZjYjY1YmJjNzczNiIsImlhdCI6MTYzNzAzMTQ5MSwiZXhwIjoxNjM3NjM2MjkxfQ.YUmx5aoDtfwmh9IArp6Ecx0oaDUmzqcFn5tMcDWF778"
     MaxTryTime: 10
 
 
@@ -94,17 +94,17 @@
 
 
     convert_dye_relation:
-        "201001" : "6001"
-        "201002" : "6002"
-        "201003" : "6003"
-        "201004" : "6004"
-        "201005" : "6005"
-        "201006" : "6006"
-        "201007" : "6007"
-        "201008" : "6008"
-        "201009" : "6009"
-        "201010" : "6010"
-        "201011" : "6011"
+        "202001" : "6001"
+        "202002" : "6002"
+        "202003" : "6003"
+        "202004" : "6004"
+        "202005" : "6005"
+        "202006" : "6006"
+        "202007" : "6007"
+        "202008" : "6008"
+        "202009" : "6009"
+        "202010" : "6010"
+        "202011" : "6011"
 
 
     animal_output_relation:
