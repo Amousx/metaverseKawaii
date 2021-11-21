@@ -173,6 +173,7 @@ def UpdateFarmData(updateType,param):
 def harverst():
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
+    time.sleep(1)
     print("harverst ",playerData, timeStamp)
     # harvest Trees
     for key, plantData in playerData["Farm"]["AllTrees"].items():
@@ -255,6 +256,7 @@ def feed():
 def collectEgg():
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
+    time.sleep(1)
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
         print("collect Animal uid:", key, " id: ", str(animalData["Id"]))
         animalData["FeedTime"] =  0
@@ -272,6 +274,7 @@ def collectEgg():
 def convertDye():
 
     playerData = GetPlayfabData()
+    time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
     for fruitData in inventory_fruit:
         if inventory_fruit[str(foodIds[0])] >= 60 :
