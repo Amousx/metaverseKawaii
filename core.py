@@ -28,14 +28,14 @@ def login(token, wallet_address, headers):
         "titleId": "B477A"
     }
     data = json.dumps(data)
-    print('data:',data)
+    util.log_debug(f'data:{data}')
     response = requests.post(url, data=data, headers=headers)
     content = json.loads(response.content)
     if content.get('code') != 200:
         pp.pprint(content)
-        print("【登录失败，请联系作者】")
+        util.log_info("【登录失败，请联系作者】")
         return False
-    print(f'Authorization ：{content["data"]["SessionTicket"]}')
+    util.log_debug(f'Authorization ：{content["data"]["SessionTicket"]}')
     # 登录成功拿到x-authorization
     headers["x-authorization"] = content["data"]["SessionTicket"]
 
@@ -46,23 +46,23 @@ def GetTime():
     response = net.post('https://b477a.playfabapi.com/Client/GetTime?sdk=UnitySDK-2.113.210830',
                     '{"AuthenticationContext":null}')
     content = json.loads(response.content)
-    print(content)
+    util.log_debug(content)
     return content
 
 def getTimeStamp():
 
     serverTime = time.strptime(GetTime()["data"]["Time"], "%Y-%m-%dT%H:%M:%S.%fZ")
-    print("serverTime", serverTime)
+    util.log_debug(f'serverTime:{serverTime}')
 
     timeStamp = int(time.mktime(serverTime))
     timeStamp = timeStamp + 3600 * util.calculate_offset(timeStamp)  # 网页端取的是东八区时间上报
-    print("interval time", timeStamp)
+    util.log_debug(f'interval time:{timeStamp}')
     return timeStamp
 
 
 # 游戏的核心API
 def ExecuteCloudScript(data):
-    print("*********ExecuteCloudScript data:", str(data))
+    util.log_debug("*********ExecuteCloudScript data:"+ str(data))
     net.options('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830')
     response = net.post('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830', data)
     content = json.loads(response.content)
@@ -75,9 +75,9 @@ def GetPlayfabData():
         '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
         '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
         '"SpecificRevision":0,"AuthenticationContext":null}')
-    pp.pprint(content)
+    # pp.pprint(content)
     if content["code"] != 200:
-        print(f'获取用户数据失败！请联系作者')
+        util.log_info(f'获取用户数据失败！请联系作者')
         return None
     return content["data"]["FunctionResult"]
 
@@ -143,24 +143,24 @@ def UpdateFarmData(updateType,param):
 
 
     result = ExecuteCloudScript(script)
-    pp.pprint(result)
-    # print(f'{result["data"]["FunctionResult"]}')
+    # pp.pprint(result)
+    # util.log_debug(f'{result["data"]["FunctionResult"]}')
     # if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
-    #     # print(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
+    #     # util.log_debug(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
     #     return 0
     # if "Error" in result["data"]["FunctionResult"]:
-    #     print(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+    #     util.log_debug(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
     #     if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-    #         print(f'没到时间！')
+    #         util.log_debug(f'没到时间！')
     #         return 1
     #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-    #         print(f'无效时间！')
+    #         util.log_debug(f'无效时间！')
     #         return 2
     #     elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
-    #         print(f'宝宝还没喂食！')
+    #         util.log_debug(f'宝宝还没喂食！')
     #         return 3
     #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-    #         print(f'食物ID有误！')
+    #         util.log_debug(f'食物ID有误！')
     #         return 4
 
     # return 0
@@ -172,42 +172,41 @@ def UpdateFarmData(updateType,param):
 
 # 收获 已实现，如遇BUG请反馈
 def harverst():
-    print("【收菜任务开始】")
+    util.log_info("【收菜任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
-    print("harverst ",playerData, timeStamp)
     # harvest Trees
     for key, plantData in playerData["Farm"]["AllTrees"].items():
         if plantData["LastHarvestTime"] == 0:
-            print("请先手动收获一次")
+            util.log_info("请先手动收获一次")
             pass
-        print("Harvesting Tree uid:", key, " id: ", str(plantData["Id"]))
+        util.log_debug("Harvesting Tree uid:"+ key +" id: "+ str(plantData["Id"]))
         #修改收割时间
         plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         plantData["UpdateTime"] = plantData["LastHarvestTime"]
         result = UpdateFarmData("tree",json.dumps({key: plantData}))
 
         if "Error" in result["data"]["FunctionResult"]:
-            print(f'!!!!!!!!收菜失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            util.log_info(f'!!!!!!!!收菜失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-                print(f'没到收获时间！')
+                util.log_info(f'没到收获时间！')
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-                print(f'无效的时间！')
+                util.log_info(f'无效的时间！')
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-                print(f'食物ID有误！')
+                util.log_info(f'食物ID有误！')
                 continue
 
-        print(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
+        util.log_info(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
 
-    print("【收菜任务结束】")
-    print("\n______________________\n")
+    util.log_info("【收菜任务结束】")
+    util.log_info("\n______________________\n")
 
 #喂食 已实现，如遇BUG请反馈
 def feed():
-    print("【喂食任务开始】")
+    util.log_info("【喂食任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
@@ -221,7 +220,7 @@ def feed():
         food1Num = inventory_fruit[str(foodIds[0])] if str(foodIds[0]) in inventory_fruit else 0
         food2Num = inventory_fruit[str(foodIds[1])] if str(foodIds[1]) in inventory_fruit else 0
 
-        print(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:{conf["item_id_fruit"][str(foodIds[0])]}[str(foodIds[0])][{foodIds[0]}]有{food1Num}个，{conf["item_id_fruit"][str(foodIds[1])]}[{foodIds[1]}]有{food2Num}个')
+        util.log_info(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:{conf["item_id_fruit"][str(foodIds[0])]}[str(foodIds[0])][{foodIds[0]}]有{food1Num}个，{conf["item_id_fruit"][str(foodIds[1])]}[{foodIds[1]}]有{food2Num}个')
         animalData["LstFoodIds"] = [] #要喂的水果
         for index in range(3):#最大喂食次数是3次
             if food1Num >= 10:
@@ -234,42 +233,42 @@ def feed():
                 time.sleep(1)
 
         if len(animalData["LstFoodIds"]) == 0:
-            print(f"背包里都没有水果，您就别喂啦！")
+            util.log_debug(f"背包里都没有水果，您就别喂啦！")
             continue
         animalData["MaxCap"] = len(animalData["LstFoodIds"])
 
         result = UpdateFarmData("feed_animal",json.dumps({key: animalData}))
 
         if "Error" in result["data"]["FunctionResult"]:
-            print(f'!!!!!!!!喂食失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            util.log_info(f'!!!!!!!!喂食失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-                print(f'未到喂食时间！')
+                util.log_info(f'未到喂食时间！')
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-                print(f'无效的时间！')
+                util.log_info(f'无效的时间！')
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
-                print(f'宝宝还没喂食！')
+                util.log_info(f'宝宝还没喂食！')
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-                print(f'食物ID有误！')
+                util.log_info(f'食物ID有误！')
                 continue
 
 
-        print(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
+        util.log_debug(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
 
 
-    print("【喂食任务结束】")
-    print("\n______________________\n")
+    util.log_info("【喂食任务结束】")
+    util.log_info("\n______________________\n")
 
 #收蛋 已实现，如遇BUG请反馈
 def collectEgg():
-    print("【收蛋任务开始】")
+    util.log_info("【收蛋任务开始】")
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
-        print("collect Animal uid:", key, " id: ", str(animalData["Id"]))
+        util.log_debug("collect Animal uid:"+ key + " id: "+ str(animalData["Id"]))
         animalData["FeedTime"] =  0
         animalData["HarvestedCount"] = 0
         animalData["UpdateTime"] = timeStamp
@@ -278,30 +277,30 @@ def collectEgg():
         result = UpdateFarmData("collectEgg",json.dumps({key: animalData}))
 
         if "Error" in result["data"]["FunctionResult"]:
-            print(f'!!!!!!!!收蛋失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+            util.log_info(f'!!!!!!!!收蛋失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-                print(f'没到时间！')
+                util.log_info(f'没到时间！')
                 
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-                print(f'无效时间！')
+                util.log_info(f'无效时间！')
                 
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
-                print(f'宝宝还没喂食！')
+                util.log_info(f'宝宝还没喂食！')
                 
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-                print(f'食物ID有误！')
+                util.log_info(f'食物ID有误！')
 
             continue
 
-        print(f'收蛋成功！')
+        util.log_info(f'收蛋成功！')
 
 
-    print("【收蛋任务结束】")
-    print("\n______________________\n")
+    util.log_info("【收蛋任务结束】")
+    util.log_info("\n______________________\n")
 
 #合成染料 加入工作队列
 def convertDye():
-    print("【合成染料任务开始】")
+    util.log_info("【合成染料任务开始】")
     playerData = GetPlayfabData()
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
@@ -314,9 +313,9 @@ def convertDye():
             }
             result = UpdateFarmData("convertDye",json.dumps(convertData))
             if "Error" in result["data"]["FunctionResult"]:
-                print(f'合成染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+                util.log_info(f'合成染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
                 continue
-            print(f'合成染料成功！')
+            util.log_info(f'合成染料成功！')
             # 'FunctionResult': {'Modifiers': {'OffChainItems': {'Fruit': {'202010': 42}}},
             #                  'NewSlot': {'AmountProduct': 2,
             #                              'IDProductMaterial': '6010',
@@ -325,27 +324,27 @@ def convertDye():
             #                              'TimeStart': 1637498227}},
        
 
-    print("【合成染料任务结束】")
-    print("\n______________________\n")
+    util.log_info("【合成染料任务结束】")
+    util.log_info("\n______________________\n")
 
 #获取染料
 def getDye():
-    print("【获取染料任务结束】")
+    util.log_info("【获取染料任务结束】")
     convertData = {
         "Index": 0,
         "FunctionName": "DyeObtainOffChain",
     }
     result = UpdateFarmData("getDye",json.dumps(convertData))
     if "Error" in result["data"]["FunctionResult"]:
-        print(f'获取染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+        util.log_info(f'获取染料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
 
         if result["data"]["FunctionResult"]["Error"] == 'Not enough time to obtain':
-            print(f'染料队列尚未完成！')
+            util.log_info(f'染料队列尚未完成！')
             
         return
-    print(f'获取染料成功！')
-    print("【获取染料任务结束】")
-    print("\n______________________\n")
+    util.log_info(f'获取染料成功！')
+    util.log_info("【获取染料任务结束】")
+    util.log_info("\n______________________\n")
 
 
 
