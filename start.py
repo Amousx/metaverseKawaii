@@ -1,6 +1,7 @@
 import json
 import pprint
 import sys
+from time import sleep
 import requests
 import core
 import net
@@ -44,13 +45,22 @@ def task_queue():
     core.getDye()
     core.convertDye()
 
+allRunTime = 0
+
+def runnedtime(ti):
+    ti += 1
+    if ti == 24:
+        print("已运行24h，请重新登陆")
+        sleep(10)
+        sys.exit(0)
 
 def tasklist():
     # 清空任务
     schedule.clear()
 
     # 创建任务
-    schedule.every(conf['harvestPeriod']).seconds.do(task_queue).run()
+    schedule.every(conf['harvestPeriod']).seconds.do(task_queue)
+    schedule.every().hour.do(runnedtime,allRunTime)
 
     while 1:
         schedule.run_pending()
@@ -87,7 +97,7 @@ def run():
 
     if loginSuccess:
         util.log_info("【登录成功！】")
-
+    
     # 能够拿到用户数据
     playerData = core.GetPlayfabData()
     showWelcome(playerData)
