@@ -10,13 +10,10 @@ import schedule
 import verify
 import marketplace
 import util
+from Conf import Conf
 
 pp = pprint.PrettyPrinter(indent=4)
 
-configure = open("conf.yaml", 'r')
-conf = yaml.safe_load(configure)
-configure_userInfo = open("userInfo.yaml", 'r')
-userInfo = yaml.safe_load(configure_userInfo)
 
 
 def showWelcome(playerStatus):
@@ -59,14 +56,14 @@ def tasklist():
     schedule.clear()
 
     # 创建任务
-    schedule.every(conf['harvestPeriod']).seconds.do(task_queue)
+    schedule.every(Conf['harvestPeriod']).seconds.do(task_queue)
     schedule.every().hour.do(runnedtime,allRunTime)
 
     while 1:
         schedule.run_pending()
 
 def checkRelease():
-    if conf["isDebug"]:
+    if Conf["isDebug"]:
         print("注意！！isDebug忘记切换为false")
         return False
     if userInfo['token'] != '' and userInfo['wallet_address'] != '':
@@ -75,13 +72,13 @@ def checkRelease():
 
     return True
 def run():
-    
+
     if not checkRelease():
         print("\n_______________________________\n")
         print("目前为开发环境，请勿直接发布！")
         print("\n_______________________________\n")
 
-    if not conf["isDebug"]:
+    if not Conf["isDebug"]:
         # marketplace.checkMarket()
         ver_ID = input("请输入验证码：")
         if not verify.verity(ver_ID):
@@ -97,7 +94,7 @@ def run():
 
     if loginSuccess:
         util.log_info("【登录成功！】")
-    
+
     # 能够拿到用户数据
     playerData = core.GetPlayfabData()
     showWelcome(playerData)

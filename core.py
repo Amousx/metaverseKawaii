@@ -1,20 +1,18 @@
 #游戏相关代码
 import requests
-import yaml
 import json
 import pprint as pp
 import net
 import time
 import util
 import random
+from Conf import conf
 
 err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
 err_NotFed = "This animal has not been fed yet"
 err_InvalidFoodId = "Invalid Food Id"
 
-configure = open("conf.yaml", 'r')
-conf = yaml.safe_load(configure)
 
 
 # 登录
@@ -280,13 +278,13 @@ def collectEgg():
             util.log_info(f'!!!!!!!!收蛋失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
                 util.log_info(f'没到时间！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
                 util.log_info(f'无效时间！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
                 util.log_info(f'宝宝还没喂食！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
 
@@ -322,7 +320,7 @@ def convertDye():
             #                              'IDRawMaterial': 202010,
             #                              'TimeEnd': 1637501827,
             #                              'TimeStart': 1637498227}},
-       
+
 
     util.log_info("【合成染料任务结束】")
     util.log_info("\n______________________\n")
@@ -340,7 +338,7 @@ def getDye():
 
         if result["data"]["FunctionResult"]["Error"] == 'Not enough time to obtain':
             util.log_info(f'染料队列尚未完成！')
-            
+
         return
     util.log_info(f'获取染料成功！')
     util.log_info("【获取染料任务结束】")
