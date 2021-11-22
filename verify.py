@@ -6,6 +6,8 @@ import binascii
 import requests
 from pyDes import des, CBC, PAD_PKCS5
 
+import util
+
 
 def get_mac_address():
     mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
@@ -33,9 +35,9 @@ def verity(ver_ID):
     ver_ID = des_encrypt('testtest', str(ver_ID))
     ver_ID = str(ver_ID, encoding="utf-8")
     postBody = {"param1": imac, "param2": ver_ID}
-    print("postBody : ",postBody)
+    util.log_debug("postBody : "+str(postBody))
     r = requests.post('http://118.31.34.5:5000/kawaii/', data=json.dumps(postBody))
-    print(r.text)
+    util.log_debug(r.text)
     if r.text == str(5):
         print("验证码使用周期超过7天")
         return False
@@ -50,8 +52,8 @@ def verity(ver_ID):
     if (r.text >= str(20)):
         dif_ver = des_decrypt('testtest', str(r.text))
         dif_ver = str(dif_ver, encoding="utf-8")
-        print(dif_ver)
-        print(get_mac_address())
+        util.log_debug(dif_ver)
+        util.log_debug(get_mac_address())
         if(get_mac_address() == dif_ver):
             return True;
         else:
