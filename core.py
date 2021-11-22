@@ -32,6 +32,7 @@ def login(token, wallet_address, headers):
     if content.get('code') != 200:
         pp.pprint(content)
         util.log_info("【登录失败，请联系作者】")
+        time.sleep(5)
         return False
     util.log_debug(f'Authorization ：{content["data"]["SessionTicket"]}')
     # 登录成功拿到x-authorization
@@ -76,6 +77,7 @@ def GetPlayfabData():
     # pp.pprint(content)
     if content["code"] != 200:
         util.log_info(f'获取用户数据失败！请联系作者')
+        time.sleep(10)
         return None
     return content["data"]["FunctionResult"]
 

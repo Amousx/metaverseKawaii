@@ -3,7 +3,10 @@ conf = {
     "isDebug": False,
     "MaxTryTime": 10,
 
-    "harvestPeriod": 240,
+    "harvestPeriod": 120,
+    "eggHarvestPeriod": 20,
+    "animalFeedPeriod":60,
+    "dyePeriod": 240,
 
     "error_flag": {
         "err_NotEnoughTime": "Not enough time to harvest",
