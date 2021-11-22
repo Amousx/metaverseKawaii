@@ -4,6 +4,10 @@ from tzlocal import get_localzone
 import time
 import sys
 import logging
+import yaml
+
+configure = open("conf.yaml", 'r')
+conf = yaml.safe_load(configure)
 
 
 def config_logging(file_name: str, console_level: int=logging.INFO, file_level: int=logging.INFO):
@@ -25,7 +29,10 @@ def config_logging(file_name: str, console_level: int=logging.INFO, file_level: 
         handlers=[file_handler, console_handler],
         )
 
-config_logging("kawaii_island.log", logging.INFO, logging.INFO)
+if conf["isDebug"]:
+    config_logging("kawaii_island.log", logging.DEBUG, logging.DEBUG)
+else:
+    config_logging("kawaii_island.log", logging.INFO, logging.INFO)
 
 def log_debug(content):
     logging.debug(content)
