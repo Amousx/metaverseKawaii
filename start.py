@@ -11,9 +11,10 @@ import verify
 import marketplace
 import util
 from Conf import conf
+import os
 
 pp = pprint.PrettyPrinter(indent=4)
-configure = open("userInfo.yaml", 'r')
+configure = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "userInfo.yaml"), 'r')
 user_conf = yaml.safe_load(configure)
 
 
