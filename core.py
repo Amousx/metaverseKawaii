@@ -12,6 +12,7 @@ err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
 err_NotFed = "This animal has not been fed yet"
 err_InvalidFoodId = "Invalid Food Id"
+err_TooManyRequest = "There are too many concurrent requests to this API being processed"
 
 configure = open("conf.yaml", 'r')
 conf = yaml.safe_load(configure)
@@ -76,6 +77,7 @@ def GetPlayfabData():
         '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
         '"SpecificRevision":0,"AuthenticationContext":null}')
     # pp.pprint(content)
+    util.log_debug(content)
     if content["code"] != 200:
         util.log_info(f'获取用户数据失败！请联系作者')
         return None
@@ -140,30 +142,18 @@ def UpdateFarmData(updateType,param):
     elif updateType == 'getDye':
             script = '{"CustomTags":null,"FunctionName":"DyeObtainOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
 
+    result = ""
+    while(True):
+        result = ExecuteCloudScript(script)
+        util.log_debug(result)
 
+        #如果请求调用次数过多 5秒后重试
+        if "Error" in result["data"]["FunctionResult"] and result["data"]["FunctionResult"]["Error"] == err_TooManyRequest:
+            time.sleep(5)
+            continue
 
-    result = ExecuteCloudScript(script)
-    # pp.pprint(result)
-    # util.log_debug(f'{result["data"]["FunctionResult"]}')
-    # if "Statistics" in result["data"]["FunctionResult"]["Modifiers"].keys():
-    #     # util.log_debug(f'!!!!!!!!操作成功！EXP：{result["data"]["FunctionResult"]["Modifiers"]["Statistics"]}')
-    #     return 0
-    # if "Error" in result["data"]["FunctionResult"]:
-    #     util.log_debug(f'!!!!!!!!操作失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
-    #     if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
-    #         util.log_debug(f'没到时间！')
-    #         return 1
-    #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
-    #         util.log_debug(f'无效时间！')
-    #         return 2
-    #     elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
-    #         util.log_debug(f'宝宝还没喂食！')
-    #         return 3
-    #     elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
-    #         util.log_debug(f'食物ID有误！')
-    #         return 4
+        break
 
-    # return 0
     return result
 
 
@@ -182,8 +172,15 @@ def harverst():
             util.log_info("请先手动收获一次")
             pass
         util.log_debug("Harvesting Tree uid:"+ key +" id: "+ str(plantData["Id"]))
+
+        parentUid = plantData["ParentUid"]
+        fieldData = playerData["Farm"]["AllFields"][parentUid]
+        timeFactor = 1 #时间系数
+        if fieldData["Id"] == 205002:
+            timeFactor = 0.9  #绿地收获时间为0.9倍
+            util.log_debug("本植物是绿地，时间系数设为0.9")
         #修改收割时间
-        plantData["LastHarvestTime"] =  plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
+        plantData["LastHarvestTime"] = plantData["LastHarvestTime"] + (timeStamp-plantData["LastHarvestTime"])//conf['harvestPeriod'] * conf['harvestPeriod'] * timeFactor
         plantData["UpdateTime"] = plantData["LastHarvestTime"]
         result = UpdateFarmData("tree",json.dumps({key: plantData}))
 
@@ -197,6 +194,9 @@ def harverst():
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
+                continue
+            elif err_InvalidFoodId in result["data"]["FunctionResult"]["Error"]:
+                util.log_info(f'时间超出范围！')
                 continue
 
         util.log_info(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
@@ -253,7 +253,7 @@ def feed():
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
                 continue
-
+                
 
         util.log_debug(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
 
