@@ -14,7 +14,7 @@ from Conf import conf
 import os
 
 pp = pprint.PrettyPrinter(indent=4)
-configure = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "userInfo.yaml"), 'r')
+configure = open(os.path.join(os.getcwd(), "userInfo.yaml"), 'r')
 user_conf = yaml.safe_load(configure)
 
 
@@ -26,13 +26,6 @@ def showWelcome(playerStatus):
         欢迎回来， {playerStatus["DisplayName"]} :\n
             当前体力值：{playerStatus["VirtualCurrency"]["EN"]}
             KWT:{allNFT["KWT"]}
-            宝宝数量：{len(allNFT["Animals"])}
-            装饰品数量：{len(allNFT["Decors"])}
-            染料数量：{len(allNFT["Dyes"])}
-            地块数量：{len(allNFT["Fields"])}
-            材料数量：{len(allNFT["Materials"])}
-            房间数量：{len(allNFT["Rooms"])}
-            植物数量：{len(allNFT["Trees"])}
         ''')
 
 
