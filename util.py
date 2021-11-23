@@ -4,10 +4,7 @@ from tzlocal import get_localzone
 import time
 import sys
 import logging
-import yaml
-
-configure = open("conf.yaml", 'r')
-conf = yaml.safe_load(configure)
+from Conf import conf
 
 
 def config_logging(file_name: str, console_level: int=logging.INFO, file_level: int=logging.INFO):

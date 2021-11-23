@@ -1,12 +1,12 @@
 #游戏相关代码
 import requests
-import yaml
 import json
 import pprint as pp
 import net
 import time
 import util
 import random
+from Conf import conf
 
 err_NotEnoughTime = "Not enough time to harvest"
 err_InvalidTime = "Invalid Time"
@@ -14,8 +14,6 @@ err_NotFed = "This animal has not been fed yet"
 err_InvalidFoodId = "Invalid Food Id"
 err_TooManyRequest = "There are too many concurrent requests to this API being processed"
 
-configure = open("conf.yaml", 'r')
-conf = yaml.safe_load(configure)
 
 
 # 登录
@@ -35,6 +33,7 @@ def login(token, wallet_address, headers):
     if content.get('code') != 200:
         pp.pprint(content)
         util.log_info("【登录失败，请联系作者】")
+        time.sleep(5)
         return False
     util.log_debug(f'Authorization ：{content["data"]["SessionTicket"]}')
     # 登录成功拿到x-authorization
@@ -80,6 +79,7 @@ def GetPlayfabData():
     util.log_debug(content)
     if content["code"] != 200:
         util.log_info(f'获取用户数据失败！请联系作者')
+        time.sleep(10)
         return None
     return content["data"]["FunctionResult"]
 
@@ -280,13 +280,13 @@ def collectEgg():
             util.log_info(f'!!!!!!!!收蛋失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
                 util.log_info(f'没到时间！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
                 util.log_info(f'无效时间！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
                 util.log_info(f'宝宝还没喂食！')
-                
+
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
 
@@ -322,7 +322,7 @@ def convertDye():
             #                              'IDRawMaterial': 202010,
             #                              'TimeEnd': 1637501827,
             #                              'TimeStart': 1637498227}},
-       
+
 
     util.log_info("【合成染料任务结束】")
     util.log_info("\n______________________\n")
@@ -340,7 +340,7 @@ def getDye():
 
         if result["data"]["FunctionResult"]["Error"] == 'Not enough time to obtain':
             util.log_info(f'染料队列尚未完成！')
-            
+
         return
     util.log_info(f'获取染料成功！')
     util.log_info("【获取染料任务结束】")

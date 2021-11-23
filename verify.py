@@ -5,6 +5,9 @@ import binascii
 
 import requests
 from pyDes import des, CBC, PAD_PKCS5
+from time import sleep
+
+import util
 
 
 def get_mac_address():
@@ -33,27 +36,32 @@ def verity(ver_ID):
     ver_ID = des_encrypt('testtest', str(ver_ID))
     ver_ID = str(ver_ID, encoding="utf-8")
     postBody = {"param1": imac, "param2": ver_ID}
-    print("postBody : ",postBody)
+    util.log_debug("postBody : "+str(postBody))
     r = requests.post('http://118.31.34.5:5000/kawaii/', data=json.dumps(postBody))
-    print(r.text)
+    util.log_debug(r.text)
     if r.text == str(5):
         print("验证码使用周期超过7天")
+        sleep(10)
         return False
     if r.text == str(1):
         print("mac地址出错")
+        sleep(10)
     elif r.text == str(2):
+        sleep(10)
         print("验证码出错")
     elif r.text == str(3):
+        sleep(10)
         print("数据库出错，联系管理员")
     if r.text < str(5):
         return False
     if (r.text >= str(20)):
         dif_ver = des_decrypt('testtest', str(r.text))
         dif_ver = str(dif_ver, encoding="utf-8")
-        print(dif_ver)
-        print(get_mac_address())
+        util.log_debug(dif_ver)
+        util.log_debug(get_mac_address())
         if(get_mac_address() == dif_ver):
             return True;
         else:
             print("该验证码已被别的机器使用，请更换验证码")
+            sleep(10)
             return False;
