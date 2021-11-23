@@ -35,11 +35,20 @@ def showWelcome(playerStatus):
         ''')
 
 
-def task_queue():
+def task_tree():
     util.log_debug('task queue start')
     core.harverst()
-    core.collectEgg()
+
+def task_animalFeed():
+    util.log_debug('animal feed task start')
     core.feed()
+
+def task_eggHarvest():
+    util.log_debug('animal harvest task start')
+    core.collectEgg()
+
+def task_dye():
+    util.log_debug("dye task start")
     core.getDye()
     core.convertDye()
 
@@ -58,8 +67,15 @@ def tasklist():
     # 清空任务
     schedule.clear()
     # 创建任务
-    schedule.every(conf['harvestPeriod']).seconds.do(task_queue).run()
+    schedule.every(conf['harvestPeriod']).seconds.do(task_tree).run()
+
+    schedule.every(conf['eggHarvestPeriod']).minutes.do(task_eggHarvest).run()
+    schedule.every(conf['animalFeedPeriod']).minutes.do(task_animalFeed).run()
+
+    schedule.every(conf['dyePeriod']).seconds.do(task_dye).run()
+
     schedule.every().hour.do(runnedtime).run()
+
     while 1:
         schedule.run_pending()
 
@@ -83,6 +99,7 @@ def run():
         ver_ID = input("请输入验证码：")
         if not verify.verity(ver_ID):
             util.log_debug("联系mixiu 购买验证码")
+            sleep(5)
             sys.exit()
         else:
             util.log_debug("验证通过")
