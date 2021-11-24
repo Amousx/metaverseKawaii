@@ -19,6 +19,7 @@ user_conf = yaml.safe_load(configure)
 
 
 def showWelcome(playerStatus):
+
     allNFT = playerStatus["AllNFT"]
     userAccountInfo = playerStatus["UserAccountInfo"]
     util.log_info(f'''\n

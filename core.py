@@ -69,19 +69,31 @@ def ExecuteCloudScript(data):
     return content
 
 
+
 # 请求用户数据
 def GetPlayfabData():
-    content = ExecuteCloudScript(
-        '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
+    # content = ExecuteCloudScript(
+    #     '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
+    #     '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
+    #     '"SpecificRevision":0,"AuthenticationContext":null}')
+    # # pp.pprint(content)
+
+    # util.log_debug(content)
+    result = ""
+    while(True):
+        result = ExecuteCloudScript('{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
         '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
         '"SpecificRevision":0,"AuthenticationContext":null}')
-    # pp.pprint(content)
-    util.log_debug(content)
-    if content["code"] != 200:
-        util.log_info(f'获取用户数据失败！请联系作者')
-        time.sleep(10)
-        return None
-    return content["data"]["FunctionResult"]
+        util.log_debug("result is :"+str(result))
+        #util.log_debug("get paly fab data try")
+        #如果请求调用次数过多 5秒后重试
+        if "error" in result and result['errorCode'] == 429:
+            time.sleep(5)
+            continue
+
+        break
+
+    return result["data"]["FunctionResult"]
 
 
 # 随机访问
@@ -148,7 +160,7 @@ def UpdateFarmData(updateType,param):
         util.log_debug(result)
 
         #如果请求调用次数过多 5秒后重试
-        if "Error" in result["data"]["FunctionResult"] and result["data"]["FunctionResult"]["Error"] == err_TooManyRequest:
+        if "error" in result and result['errorCode'] == 1342:
             time.sleep(5)
             continue
 
@@ -200,6 +212,7 @@ def harverst():
                 continue
 
         util.log_info(f'收菜成功！Tree Uid:{key},名称：{conf["item_id_species"][str(plantData["Id"])]}')
+
 
     util.log_info("【收菜任务结束】")
     util.log_info("\n______________________\n")
@@ -253,7 +266,7 @@ def feed():
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
                 continue
-                
+
 
         util.log_debug(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
 
