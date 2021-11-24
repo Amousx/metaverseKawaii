@@ -1,6 +1,4 @@
 conf = {
-    "version": "0.0.1",
-
     "isDebug": True,
     "MaxTryTime": 10,
 
