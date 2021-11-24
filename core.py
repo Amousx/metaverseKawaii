@@ -64,34 +64,35 @@ def getTimeStamp():
 def ExecuteCloudScript(data):
     util.log_debug("*********ExecuteCloudScript data:"+ str(data))
     net.options('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830')
-    response = net.post('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830', data)
-    content = json.loads(response.content)
+
+    content = ""
+    while(True):
+        
+        response = net.post('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830', data)
+        content = json.loads(response.content)
+        #util.log_debug("get paly fab data try")
+        #如果请求调用次数过多 5秒后重试
+        if "error" in content and content['errorCode'] == 429:
+            util.log_info("请求过于频繁，5秒后重试...")
+            time.sleep(5)
+            continue
+
+        break
+
+
     return content
 
 
 
 # 请求用户数据
 def GetPlayfabData():
-    # content = ExecuteCloudScript(
-    #     '{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
-    #     '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
-    #     '"SpecificRevision":0,"AuthenticationContext":null}')
-    # # pp.pprint(content)
 
-    # util.log_debug(content)
-    result = ""
-    while(True):
-        result = ExecuteCloudScript('{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
-        '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
-        '"SpecificRevision":0,"AuthenticationContext":null}')
-        util.log_debug("result is :"+str(result))
-        #util.log_debug("get paly fab data try")
-        #如果请求调用次数过多 5秒后重试
-        if "error" in result and result['errorCode'] == 429:
-            time.sleep(5)
-            continue
+    result = ExecuteCloudScript('{"CustomTags":null,"FunctionName":"GetPlayfabData","FunctionParameter":{"IsDev":false,"Address":null,'
+    '"FunctionName":"GetPlayfabData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live",'
+    '"SpecificRevision":0,"AuthenticationContext":null}')
 
-        break
+    util.log_debug("GetPlayfabData result is :"+str(result))
+    # pp.pprint(content)
 
     return result["data"]["FunctionResult"]
 
@@ -154,18 +155,9 @@ def UpdateFarmData(updateType,param):
     elif updateType == 'getDye':
             script = '{"CustomTags":null,"FunctionName":"DyeObtainOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
 
-    result = ""
-    while(True):
-        result = ExecuteCloudScript(script)
-        util.log_debug(result)
-
-        #如果请求调用次数过多 5秒后重试
-        if "error" in result and result['errorCode'] == 1342:
-            time.sleep(5)
-            continue
-
-        break
-
+    result = ExecuteCloudScript(script)
+    util.log_debug(result)
+    
     return result
 
 
