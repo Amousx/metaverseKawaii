@@ -50,6 +50,7 @@ def verity(ver_ID):
     elif r.text == str(3):
         util.log_info("数据库出错，联系管理员")
     if r.text < str(5):
+        sleep(10)
         return False
     if (r.text >= str(20)):
         dif_ver = des_decrypt('testtest', str(r.text))
