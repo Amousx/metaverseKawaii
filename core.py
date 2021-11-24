@@ -72,7 +72,7 @@ def ExecuteCloudScript(data):
         content = json.loads(response.content)
         #util.log_debug("get paly fab data try")
         #如果请求调用次数过多 5秒后重试
-        if "error" in content and content['errorCode'] == 429:
+        if "error" in content and (content['errorCode'] == 429 or content['errorCode'] == 1342):
             util.log_info("请求过于频繁，5秒后重试...")
             time.sleep(5)
             continue
