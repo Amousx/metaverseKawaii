@@ -1,0 +1,10 @@
+[config]文件夹
+
+main.spec 打包的配置文件，目前打包基于这个文件的设置。
+release.py 打包的核心脚本
+config.ini 用于版本号，打包时版本号会自增
+icon.ico 生成exe的图标
+
+[resource]文件夹
+
+想要打进zip的资源都放到这里，比如说明PDF
