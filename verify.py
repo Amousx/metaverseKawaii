@@ -40,18 +40,15 @@ def verity(ver_ID):
     r = requests.post('http://118.31.34.5:5000/kawaii/', data=json.dumps(postBody))
     util.log_debug(r.text)
     if r.text == str(5):
-        print("验证码使用周期超过7天")
-        sleep(10)
+        util.log_info("验证码使用周期超过7天")
         return False
     if r.text == str(1):
-        print("mac地址出错")
-        sleep(10)
+        util.log_info("mac地址出错")
     elif r.text == str(2):
-        sleep(10)
-        print("验证码出错")
+        util.log_info("验证码出错")
+        
     elif r.text == str(3):
-        sleep(10)
-        print("数据库出错，联系管理员")
+        util.log_info("数据库出错，联系管理员")
     if r.text < str(5):
         return False
     if (r.text >= str(20)):
@@ -65,3 +62,5 @@ def verity(ver_ID):
             print("该验证码已被别的机器使用，请更换验证码")
             sleep(10)
             return False;
+    sleep(10)
+    return False
