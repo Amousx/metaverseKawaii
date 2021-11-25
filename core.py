@@ -157,7 +157,7 @@ def UpdateFarmData(updateType,param):
     elif updateType == 'convertMetarials':
         script = '{"CustomTags":null,"FunctionName":"MaterialConvertOffChain","FunctionParameter":' +  param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'getMetarials':
-        script = '{"CustomTags":null,"FunctionName":"MaterialConvertOffChain","FunctionParameter":' +  param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+        script = '{"CustomTags":null,"FunctionName":"MaterialObtainOffChain","FunctionParameter":' +  param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     result = ExecuteCloudScript(script)
     util.log_debug(result)
 
@@ -219,6 +219,7 @@ def feed():
     playerData = GetPlayfabData()
     time.sleep(1)
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
+        playerData = GetPlayfabData()
         #修改喂食时间
         animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         animalData["UpdateTime"] =  animalData["FeedTime"]
@@ -242,6 +243,7 @@ def feed():
 
         if len(animalData["LstFoodIds"]) == 0:
             util.log_debug(f"背包里都没有水果，您就别喂啦！")
+            time.sleep(20)
             continue
         animalData["MaxCap"] = len(animalData["LstFoodIds"])
 
@@ -251,19 +253,24 @@ def feed():
             util.log_info(f'!!!!!!!!喂食失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
                 util.log_info(f'未到喂食时间！')
+                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
                 util.log_info(f'无效的时间！')
+                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
                 util.log_info(f'宝宝还没喂食！')
+                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
+                time.sleep(20)
                 continue
 
 
         util.log_debug(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
+        time.sleep(20)
 
 
     util.log_info("【喂食任务结束】")
