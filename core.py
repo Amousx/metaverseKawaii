@@ -67,7 +67,7 @@ def ExecuteCloudScript(data):
 
     content = ""
     while(True):
-        
+
         response = net.post('https://b477a.playfabapi.com/Client/ExecuteCloudScript?sdk=UnitySDK-2.113.210830', data)
         content = json.loads(response.content)
         #util.log_debug("get paly fab data try")
@@ -149,15 +149,18 @@ def UpdateFarmData(updateType,param):
     elif updateType == 'collectEgg':
         script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsHarvestAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'feed_animal':
-            script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+        script = '{"CustomTags":null,"FunctionName":"UpdateFarmData","FunctionParameter":{"Data":{"DictAnimals":' + param + ',"IsFeedAnimal":true},"FunctionName":"UpdateFarmData"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'convertDye':
-            script = '{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+        script = '{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     elif updateType == 'getDye':
-            script = '{"CustomTags":null,"FunctionName":"DyeObtainOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
-
+        script = '{"CustomTags":null,"FunctionName":"DyeObtainOffChain","FunctionParameter":' + param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+    elif updateType == 'convertMetarials':
+        script = '{"CustomTags":null,"FunctionName":"MaterialConvertOffChain","FunctionParameter":' +  param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
+    elif updateType == 'getMetarials':
+        script = '{"CustomTags":null,"FunctionName":"MaterialConvertOffChain","FunctionParameter":' +  param + ',"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}'
     result = ExecuteCloudScript(script)
     util.log_debug(result)
-    
+
     return result
 
 
@@ -310,10 +313,10 @@ def convertDye():
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
     for fruitId,fruitNum in inventory_fruit.items():
-        if fruitNum >= 60 :
+        if fruitNum >= 80 :
             convertData = {
                 "Id": conf["convert_dye_relation"][str(fruitId)],
-                "Amount": (fruitNum - 10)//50,
+                "Amount": (fruitNum - 30)//50,
                 "FunctionName": "DyeConvertOffChain",
             }
             result = UpdateFarmData("convertDye",json.dumps(convertData))
@@ -334,7 +337,7 @@ def convertDye():
 
 #获取染料
 def getDye():
-    util.log_info("【获取染料任务结束】")
+    util.log_info("【获取染料任务开始】")
     convertData = {
         "Index": 0,
         "FunctionName": "DyeObtainOffChain",
@@ -351,9 +354,80 @@ def getDye():
     util.log_info("【获取染料任务结束】")
     util.log_info("\n______________________\n")
 
+#获取材料
+def convertMetarials():
+    util.log_info("【合成材料任务开始】")
+    playerData = GetPlayfabData()
+    time.sleep(1)
+    inventory_egg = playerData["Inventory"]["Egg"]
+    for eggId, eggNum in inventory_egg.items():
+         if eggNum >= 5:
+             convertData = {
+                  "Id": conf["convert_Materials_relation"][str(eggId)],
+                  "Amount": eggNum // 5 ,
+                  "FunctionName": "MaterialConvertOffChain",
+             }
+             result = UpdateFarmData("convertMetarials", json.dumps(convertData))
+             if "Error" in result["data"]["FunctionResult"]:
+                 util.log_info(f'合成材料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+                 continue
+             util.log_info(f'合成材料成功！')
+         # {
+         #     "CustomTags": null,
+         #     "FunctionName": "MaterialConvertOffChain",
+         #     "FunctionParameter": {
+         #         "Id": 5010,
+         #         "Amount": 3,
+         #         "FunctionName": "MaterialConvertOffChain"
+         #     },
+         #     "GeneratePlayStreamEvent": null,
+         #     "RevisionSelection": "Live",
+         #     "SpecificRevision": 0,
+         #     "AuthenticationContext": null
+         # }
+
+def getMetarials():
+    util.log_info("【获取材料任务开始】")
+    convertData = {
+        "Index": 0,
+        "FunctionName": "MetarialsObtainOffChain",
+    }
+    result = UpdateFarmData("getMetarials",json.dumps(convertData))
+    if "Error" in result["data"]["FunctionResult"]:
+        util.log_info(f'获取材料失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
+
+        if result["data"]["FunctionResult"]["Error"] == 'Not enough time to obtain':
+            util.log_info(f'材料队列尚未完成！')
+
+        return
+    util.log_info(f'获取材料成功！')
+    util.log_info("【获取材料任务结束】")
+    util.log_info("\n______________________\n")
+# {
+#   "CustomTags": null,
+#   "FunctionName": "MaterialObtainOffChain",
+#   "FunctionParameter": {
+#     "Index": 0,
+#     "FunctionName": "MaterialObtainOffChain"
+#   },
+#   "GeneratePlayStreamEvent": null,
+#   "RevisionSelection": "Live",
+#   "SpecificRevision": 0,
+#   "AuthenticationContext": null
+# # }
 
 
-#{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":{"Id":6006,"Amount":1,"FunctionName":"DyeConvertOffChain"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
+
+
+
+
+
+
+
+
+
+
+                 #{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":{"Id":6006,"Amount":1,"FunctionName":"DyeConvertOffChain"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 #{"CustomTags":null,"FunctionName":"DyeConvertOffChain","FunctionParameter":{"Id":6006,"Amount":1,"FunctionName":"DyeConvertOffChain"},"GeneratePlayStreamEvent":null,"RevisionSelection":"Live","SpecificRevision":0,"AuthenticationContext":null}
 
 ''' 网页正确请求和返回的数据
