@@ -12,11 +12,10 @@ import marketplace
 import util
 from Conf import conf
 import os
-
+import dataManager
 pp = pprint.PrettyPrinter(indent=4)
 configure = open(os.path.join(os.getcwd(), "userInfo.yaml"), 'r')
 user_conf = yaml.safe_load(configure)
-
 
 def showWelcome(playerStatus):
 
@@ -91,13 +90,17 @@ def run():
 
     if not conf["isDebug"]:
         # marketplace.checkMarket()
-        ver_ID = input("请输入验证码：")
-        if not verify.verity(ver_ID):
+        print(dataManager.ver_ID)
+        if dataManager.ver_ID == "":
+            dataManager.ver_ID = input("请输入验证码：")
+        if not verify.verity(dataManager.ver_ID):
             util.log_debug("联系mixiu 购买验证码")
+            dataManager.ver_ID = ""
             sleep(5)
             sys.exit()
         else:
             util.log_debug("验证通过")
+
     # 先登录，需要用到用户的钱包地址和token
     # （目前不知道怎么根据钱包地址获取token，可能需要从钱包的插件。因此需要先在浏览器登录，从Network里拿到wallet_address和token，手填到代码开头，获取的方式见截图）
     loginSuccess = core.login(token=user_conf['token'],
