@@ -36,6 +36,14 @@ def log_debug(content):
 def log_info(content):
     logging.info(content)
 
+def log_exception():
+    logging.exception(sys.exc_info())
+
+
+
+
+
+
 def calculate_offset(now_stamp):
     """计算时区偏移量"""
     ts = time.time()

@@ -1,5 +1,9 @@
 import start
+import util
 
 if __name__ == "__main__":
-    start.run()
+    try:
+        start.run()
+    except:
+        util.log_exception()
  
