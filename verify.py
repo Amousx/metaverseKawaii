@@ -38,7 +38,7 @@ def verity(ver_ID):
     postBody = {"param1": imac, "param2": ver_ID}
     util.log_debug("postBody : "+str(postBody))
     r = requests.post('http://118.31.34.5:5000/kawaii/', data=json.dumps(postBody))
-    util.log_debug(r.text)
+    util.log_debug("r.text = " + r.text)
     if r.text == str(5):
         util.log_info("验证码使用周期超过7天")
         return False
@@ -46,11 +46,10 @@ def verity(ver_ID):
         util.log_info("mac地址出错")
     elif r.text == str(2):
         util.log_info("验证码出错")
-        
     elif r.text == str(3):
         util.log_info("数据库出错，联系管理员")
+
     if r.text < str(5):
-        sleep(10)
         return False
     if (r.text >= str(20)):
         dif_ver = des_decrypt('testtest', str(r.text))
@@ -58,10 +57,9 @@ def verity(ver_ID):
         util.log_debug(dif_ver)
         util.log_debug(get_mac_address())
         if(get_mac_address() == dif_ver):
-            return True;
+            return True
         else:
             print("该验证码已被别的机器使用，请更换验证码")
-            sleep(10)
-            return False;
-    sleep(10)
+            return False
+
     return False
