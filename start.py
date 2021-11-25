@@ -46,6 +46,11 @@ def task_dye():
     core.getDye()
     core.convertDye()
 
+def task_metarials():
+    util.log_debug("metarials task start")
+    core.getMetarials()
+    core.convertMetarials()
+
 allRunTime = 0
 
 def runnedtime():
@@ -67,6 +72,9 @@ def tasklist():
     schedule.every(conf['animalFeedPeriod']).minutes.do(task_animalFeed).run()
 
     schedule.every(conf['dyePeriod']).seconds.do(task_dye).run()
+
+    schedule.every(conf['metarialsPeriod']).seconds.do(task_metarials).run()
+
 
     schedule.every().hour.do(runnedtime).run()
 

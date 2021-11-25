@@ -6,7 +6,8 @@ conf = {
     "harvestPeriod": 120,
     "eggHarvestPeriod": 20,
     "animalFeedPeriod":60,
-    "dyePeriod": 240,
+    "dyePeriod": 1800,
+    "metarialsPeriod":1800,
 
     "error_flag": {
         "err_NotEnoughTime": "Not enough time to harvest",
