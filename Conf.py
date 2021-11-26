@@ -3,9 +3,9 @@ conf = {
     "isDebug": False,
     "MaxTryTime": 10,
 
-    "harvestPeriod": 120,
-    "eggHarvestPeriod": 20,
-    "animalFeedPeriod": 20,
+    "harvestPeriod": 600,
+    "eggHarvestPeriod": 10,
+    "animalFeedPeriod": 10,
     "dyePeriod": 600,
     "metarialsPeriod":600,
 

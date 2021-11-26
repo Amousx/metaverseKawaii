@@ -218,32 +218,35 @@ def feed():
     timeStamp = getTimeStamp()
     playerData = GetPlayfabData()
     time.sleep(1)
+    inventory_fruit = playerData["Inventory"]["Fruit"]
+    feed1Num = 0
+    feed2Num = 0
+
+
+
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
-        playerData = GetPlayfabData()
         #修改喂食时间
         animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         animalData["UpdateTime"] =  animalData["FeedTime"]
         foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
-
-        inventory_fruit = playerData["Inventory"]["Fruit"]
         food1Num = inventory_fruit[str(foodIds[0])] if str(foodIds[0]) in inventory_fruit else 0
         food2Num = inventory_fruit[str(foodIds[1])] if str(foodIds[1]) in inventory_fruit else 0
+        realfood1Num = food1Num - feed1Num
+        realfood2Num = food2Num - feed2Num
 
-        util.log_info(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:{conf["item_id_fruit"][str(foodIds[0])]}[str(foodIds[0])][{foodIds[0]}]有{food1Num}个，{conf["item_id_fruit"][str(foodIds[1])]}[{foodIds[1]}]有{food2Num}个')
+        util.log_info(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:{conf["item_id_fruit"][str(foodIds[0])]}[str(foodIds[0])][{foodIds[0]}]有{realfood1Num}个，{conf["item_id_fruit"][str(foodIds[1])]}[{foodIds[1]}]有{realfood2Num}个')
         animalData["LstFoodIds"] = [] #要喂的水果
-        for index in range(3):#最大喂食次数是3次
-            if food1Num >= 10:
-                animalData["LstFoodIds"].append(foodIds[0])
-                food1Num = food1Num - 10
-                time.sleep(1)
-            elif food2Num >= 10:
-                animalData["LstFoodIds"].append(foodIds[1])
-                food2Num = food2Num - 10
-                time.sleep(1)
+
+        if realfood1Num >= 10:
+            animalData["LstFoodIds"].append(foodIds[0])
+            feed1Num -=10
+
+        elif realfood2Num >= 10:
+            animalData["LstFoodIds"].append(foodIds[1])
+            feed2Num -= 10
 
         if len(animalData["LstFoodIds"]) == 0:
             util.log_debug(f"背包里都没有水果，您就别喂啦！")
-            time.sleep(20)
             continue
         animalData["MaxCap"] = len(animalData["LstFoodIds"])
 
@@ -253,24 +256,19 @@ def feed():
             util.log_info(f'!!!!!!!!喂食失败！错误原因：{result["data"]["FunctionResult"]["Error"]}')
             if result["data"]["FunctionResult"]["Error"] == err_NotEnoughTime:
                 util.log_info(f'未到喂食时间！')
-                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidTime:
                 util.log_info(f'无效的时间！')
-                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_NotFed:
                 util.log_info(f'宝宝还没喂食！')
-                time.sleep(20)
                 continue
             elif result["data"]["FunctionResult"]["Error"] == err_InvalidFoodId:
                 util.log_info(f'食物ID有误！')
-                time.sleep(20)
                 continue
 
-
         util.log_debug(f'喂食成功！Animal Uid:{key},名称：{conf["item_id_animal"][str(animalData["Id"])]}')
-        time.sleep(20)
+
 
 
     util.log_info("【喂食任务结束】")
