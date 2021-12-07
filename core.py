@@ -321,7 +321,7 @@ def convertDye():
         if fruitNum >= 80 :
             convertData = {
                 "Id": conf["convert_dye_relation"][str(fruitId)],
-                "Amount": (fruitNum - 30)//50,
+                "Amount": (fruitNum - 100)//50,
                 "FunctionName": "DyeConvertOffChain",
             }
             result = UpdateFarmData("convertDye",json.dumps(convertData))
