@@ -39,17 +39,23 @@ def verity(ver_ID):
     util.log_debug("postBody : "+str(postBody))
     r = requests.post('http://118.31.34.5:5000/kawaii/', data=json.dumps(postBody))
     util.log_debug("r.text = " + r.text)
-    if r.text == str(5):
+    if len(r.text) == 5:
+        print("验证码使用周期超过7天")
         util.log_info("验证码使用周期超过7天")
         return False
-    if r.text == str(1):
+    if len(r.text) == 1:
+        print("mac地址出错")
         util.log_info("mac地址出错")
-    elif r.text == str(2):
+    elif len(r.text) == 2:
+        print("验证码出错")
         util.log_info("验证码出错")
-    elif r.text == str(3):
+    elif len(r.text) == 3:
+        print("数据库出错，联系管理员")
         util.log_info("数据库出错，联系管理员")
 
-    if r.text < str(5):
+    if len(r.text) < 5:
+        print("数据校验错误")
+        util.log_info("数据校验错误")
         return False
     if (r.text >= str(20)):
         dif_ver = des_decrypt('testtest', str(r.text))
