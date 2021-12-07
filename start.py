@@ -102,7 +102,8 @@ def run():
         if dataManager.ver_ID == "":
             dataManager.ver_ID = input("请输入验证码：")
         if not verify.verity(dataManager.ver_ID):
-            util.log_debug("联系mixiu 购买验证码")
+            print("联系mixiu 购买验证码")
+            util.log_info("联系mixiu 购买验证码")
             dataManager.ver_ID = ""
             sleep(5)
             sys.exit()
