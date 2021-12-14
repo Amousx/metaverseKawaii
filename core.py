@@ -219,31 +219,37 @@ def feed():
     playerData = GetPlayfabData()
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
-    feed1Num = 0
-    feed2Num = 0
-
-
 
     for key, animalData in playerData["Farm"]["AllAnimals"].items():
         #修改喂食时间
         animalData["FeedTime"] =  animalData["FeedTime"] + (timeStamp-animalData["FeedTime"])//conf['harvestPeriod'] * conf['harvestPeriod']
         animalData["UpdateTime"] =  animalData["FeedTime"]
         foodIds = conf["feed_fruit_relation"][str(animalData["Id"])]
-        food1Num = inventory_fruit[str(foodIds[0])] if str(foodIds[0]) in inventory_fruit else 0
-        food2Num = inventory_fruit[str(foodIds[1])] if str(foodIds[1]) in inventory_fruit else 0
-        realfood1Num = food1Num - feed1Num
-        realfood2Num = food2Num - feed2Num
 
-        util.log_info(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:{conf["item_id_fruit"][str(foodIds[0])]}[str(foodIds[0])][{foodIds[0]}]有{realfood1Num}个，{conf["item_id_fruit"][str(foodIds[1])]}[{foodIds[1]}]有{realfood2Num}个')
+        inventory_fruit = playerData["Inventory"]["Fruit"]
+
+        util.log_info(f'{conf["item_id_animal"][str(animalData["Id"])]} 想吃的食物:\n')
+
+        foodDict = {}
+        for foodId in foodIds:
+            foodNum = inventory_fruit[str(foodId)] if str(foodId) in inventory_fruit else 0
+            util.log_info(f'{conf["item_id_fruit"][str(foodId)]}有{foodNum}个\n')
+            foodDict[foodId] = foodNum
+        
+
         animalData["LstFoodIds"] = [] #要喂的水果
+        for index in range(3):#最大喂食次数是3次
 
-        if realfood1Num >= 10:
-            animalData["LstFoodIds"].append(foodIds[0])
-            feed1Num -=10
+            #取数量最多的喂
+            mostFood = max(foodDict.items(),key=lambda x:x[1])
 
-        elif realfood2Num >= 10:
-            animalData["LstFoodIds"].append(foodIds[1])
-            feed2Num -= 10
+            if foodDict[mostFood[0]] >= 10:
+                animalData["LstFoodIds"].append(mostFood[0])
+                #直接修改源数据
+                foodDict[mostFood[0]] -= 10
+                inventory_fruit[str(mostFood[0])] -= 10 
+                time.sleep(1)
+
 
         if len(animalData["LstFoodIds"]) == 0:
             util.log_debug(f"背包里都没有水果，您就别喂啦！")
