@@ -1,6 +1,6 @@
 conf = {
 
-    "isDebug": Flase,
+    "isDebug": False,
     "MaxTryTime": 10,
 
     "harvestPeriod": 600,
