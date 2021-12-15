@@ -235,7 +235,7 @@ def feed():
             foodNum = inventory_fruit[str(foodId)] if str(foodId) in inventory_fruit else 0
             util.log_info(f'{conf["item_id_fruit"][str(foodId)]}有{foodNum}个\n')
             foodDict[foodId] = foodNum
-        
+
 
         animalData["LstFoodIds"] = [] #要喂的水果
         for index in range(3):#最大喂食次数是3次
@@ -247,7 +247,7 @@ def feed():
                 animalData["LstFoodIds"].append(mostFood[0])
                 #直接修改源数据
                 foodDict[mostFood[0]] -= 10
-                inventory_fruit[str(mostFood[0])] -= 10 
+                inventory_fruit[str(mostFood[0])] -= 10
                 time.sleep(1)
 
 
@@ -327,7 +327,7 @@ def convertDye():
         if fruitNum >= 10 :
             convertData = {
                 "Id": conf["convert_dye_relation"][str(fruitId)],
-                "Amount": （fruitNum-10） //50,
+                "Amount": (fruitNum-10) //50,
                 "FunctionName": "DyeConvertOffChain",
             }
             result = UpdateFarmData("convertDye",json.dumps(convertData))

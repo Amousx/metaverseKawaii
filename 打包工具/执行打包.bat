@@ -2,6 +2,7 @@
 
 echo "Start Config"
 python config/release.py start
+
 echo "Start Build"
 pyinstaller config/main.spec
 
