@@ -324,10 +324,10 @@ def convertDye():
     time.sleep(1)
     inventory_fruit = playerData["Inventory"]["Fruit"]
     for fruitId,fruitNum in inventory_fruit.items():
-        if fruitNum >= 80 :
+        if fruitNum >= 10 :
             convertData = {
                 "Id": conf["convert_dye_relation"][str(fruitId)],
-                "Amount": (fruitNum - 100)//50,
+                "Amount": （fruitNum-10） //50,
                 "FunctionName": "DyeConvertOffChain",
             }
             result = UpdateFarmData("convertDye",json.dumps(convertData))
