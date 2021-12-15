@@ -372,10 +372,10 @@ def convertMetarials():
     time.sleep(1)
     inventory_egg = playerData["Inventory"]["Egg"]
     for eggId, eggNum in inventory_egg.items():
-         if eggNum >= 5:
+         if eggNum >= 100:
              convertData = {
                   "Id": conf["convert_Materials_relation"][str(eggId)],
-                  "Amount": eggNum // 5 ,
+                  "Amount": (eggNum-100) // 5 ,
                   "FunctionName": "MaterialConvertOffChain",
              }
              result = UpdateFarmData("convertMetarials", json.dumps(convertData))
