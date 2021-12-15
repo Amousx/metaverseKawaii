@@ -2,10 +2,11 @@
 
 echo "Start Config"
 python config/release.py start
-echo "Strat Bulid"
+
+echo "Start Build"
 pyinstaller config/main.spec
 
 python config/release.py end
-echo "Bulid Success"
+echo "Build Success"
 
 pause
